@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  naidis-core:
+    build: .
+    container_name: naidis-core
+    ports:
+      - "21420:21420"
+    environment:
+      - RUST_LOG=info
+    volumes:
+      - naidis-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:21420/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  naidis-core-with-ollama:
+    build: .
+    container_name: naidis-core-ollama
+    ports:
+      - "21420:21420"
+    environment:
+      - RUST_LOG=info
+      - OLLAMA_HOST=ollama:11434
+    volumes:
+      - naidis-data:/app/data
+    depends_on:
+      - ollama
+    restart: unless-stopped
+    profiles:
+      - with-ollama
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: unless-stopped
+    profiles:
+      - with-ollama
+
+volumes:
+  naidis-data:
+  ollama-data:
