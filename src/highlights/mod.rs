@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
@@ -18,11 +19,13 @@ pub enum HighlightError {
     ArticleNotFound(String),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct Highlight {
     pub id: String,
     pub article_id: String,
     pub text: String,
+    #[ts(optional)]
     pub note: Option<String>,
     pub color: HighlightColor,
     pub position: HighlightPosition,
@@ -30,7 +33,8 @@ pub struct Highlight {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 #[serde(rename_all = "lowercase")]
 #[derive(Default)]
 pub enum HighlightColor {
@@ -43,49 +47,68 @@ pub enum HighlightColor {
     Orange,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct HighlightPosition {
     pub start_offset: usize,
     pub end_offset: usize,
+    #[ts(optional)]
     pub paragraph_index: Option<usize>,
+    #[ts(optional)]
     pub page_number: Option<usize>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct CreateHighlightRequest {
     pub article_id: String,
     pub text: String,
+    #[ts(optional)]
     pub note: Option<String>,
+    #[ts(optional)]
     pub color: Option<HighlightColor>,
     pub position: HighlightPosition,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct UpdateHighlightRequest {
     pub id: String,
+    #[ts(optional)]
     pub note: Option<String>,
+    #[ts(optional)]
     pub color: Option<HighlightColor>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct HighlightQuery {
+    #[ts(optional)]
     pub article_id: Option<String>,
+    #[ts(optional)]
     pub color: Option<HighlightColor>,
+    #[ts(optional)]
     pub has_note: Option<bool>,
+    #[ts(optional)]
     pub search: Option<String>,
+    #[ts(optional)]
     pub limit: Option<usize>,
+    #[ts(optional)]
     pub offset: Option<usize>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct HighlightExport {
     pub format: ExportFormat,
+    #[ts(optional)]
     pub article_id: Option<String>,
     pub include_notes: bool,
     pub group_by_color: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 #[serde(rename_all = "lowercase")]
 pub enum ExportFormat {
     Markdown,

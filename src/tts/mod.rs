@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use std::process::Command;
 use thiserror::Error;
 
@@ -12,29 +13,36 @@ pub enum TtsError {
     Failed(String),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct TtsRequest {
     pub text: String,
+    #[ts(optional)]
     pub voice: Option<String>,
+    #[ts(optional)]
     pub rate: Option<f32>,
+    #[ts(optional)]
     pub output_path: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct TtsVoice {
     pub id: String,
     pub name: String,
     pub language: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct TtsStatus {
     pub available: bool,
     pub engine: String,
     pub voices: Vec<TtsVoice>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 #[serde(rename_all = "lowercase")]
 pub enum TtsEngine {
     System,
@@ -322,10 +330,13 @@ pub fn stop_speaking() -> Result<(), TtsError> {
     Ok(())
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct ReadArticleRequest {
     pub content: String,
+    #[ts(optional)]
     pub voice: Option<String>,
+    #[ts(optional)]
     pub rate: Option<f32>,
 }
 

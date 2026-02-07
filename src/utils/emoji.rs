@@ -1,13 +1,17 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct EmojiSearchRequest {
     pub query: String,
+    #[ts(optional)]
     pub limit: Option<usize>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct EmojiItem {
     pub emoji: String,
     pub name: String,
@@ -15,7 +19,8 @@ pub struct EmojiItem {
     pub group: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct EmojiSearchResponse {
     pub emojis: Vec<EmojiItem>,
     pub total: usize,
@@ -52,7 +57,8 @@ pub fn search_emoji(request: &EmojiSearchRequest) -> Result<EmojiSearchResponse>
     })
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct EmojiByShortcodeRequest {
     pub shortcode: String,
 }
@@ -76,9 +82,11 @@ pub fn get_emoji_by_shortcode(request: &EmojiByShortcodeRequest) -> Result<Optio
     Ok(None)
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct EmojiGroupRequest {
     pub group: String,
+    #[ts(optional)]
     pub limit: Option<usize>,
 }
 

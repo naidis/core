@@ -1,24 +1,33 @@
 use anyhow::Result;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
 const TODOIST_API_BASE: &str = "https://api.todoist.com/rest/v2";
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct TodoistConfig {
     pub api_token: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct TodoistTask {
     pub id: String,
     pub content: String,
+    #[ts(optional)]
     pub description: Option<String>,
+    #[ts(optional)]
     pub project_id: Option<String>,
+    #[ts(optional)]
     pub project_name: Option<String>,
+    #[ts(optional)]
     pub section_id: Option<String>,
+    #[ts(optional)]
     pub parent_id: Option<String>,
     pub priority: i32,
+    #[ts(optional)]
     pub due: Option<TodoistDue>,
     pub labels: Vec<String>,
     pub is_completed: bool,
@@ -26,20 +35,26 @@ pub struct TodoistTask {
     pub url: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct TodoistDue {
     pub date: String,
+    #[ts(optional)]
     pub string: Option<String>,
+    #[ts(optional)]
     pub datetime: Option<String>,
+    #[ts(optional)]
     pub timezone: Option<String>,
     pub is_recurring: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct TodoistProject {
     pub id: String,
     pub name: String,
     pub color: String,
+    #[ts(optional)]
     pub parent_id: Option<String>,
     pub order: i32,
     pub is_favorite: bool,
@@ -82,60 +97,79 @@ struct ApiProject {
     pub url: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "TodoistFetchTasksRequest")]
 pub struct FetchTasksRequest {
     pub config: TodoistConfig,
+    #[ts(optional)]
     pub project_id: Option<String>,
+    #[ts(optional)]
     pub filter: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "TodoistFetchTasksResponse")]
 pub struct FetchTasksResponse {
     pub tasks: Vec<TodoistTask>,
     pub total: usize,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "TodoistFetchProjectsRequest")]
 pub struct FetchProjectsRequest {
     pub config: TodoistConfig,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "TodoistFetchProjectsResponse")]
 pub struct FetchProjectsResponse {
     pub projects: Vec<TodoistProject>,
     pub total: usize,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "TodoistCreateTaskRequest")]
 pub struct CreateTaskRequest {
     pub config: TodoistConfig,
     pub content: String,
+    #[ts(optional)]
     pub description: Option<String>,
+    #[ts(optional)]
     pub project_id: Option<String>,
+    #[ts(optional)]
     pub due_string: Option<String>,
+    #[ts(optional)]
     pub due_date: Option<String>,
+    #[ts(optional)]
     pub priority: Option<i32>,
+    #[ts(optional)]
     pub labels: Option<Vec<String>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "TodoistCompleteTaskRequest")]
 pub struct CompleteTaskRequest {
     pub config: TodoistConfig,
     pub task_id: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "TodoistSyncToObsidianRequest")]
 pub struct SyncToObsidianRequest {
     pub config: TodoistConfig,
     pub vault_path: String,
     pub target_folder: String,
+    #[ts(optional)]
     pub project_id: Option<String>,
+    #[ts(optional)]
     pub format: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "TodoistSyncToObsidianResponse")]
 pub struct SyncToObsidianResponse {
     pub tasks_synced: usize,
+    pub tasks: Vec<TodoistTask>,
     pub file_path: String,
     pub content: String,
 }
@@ -364,6 +398,7 @@ pub async fn sync_to_obsidian(request: &SyncToObsidianRequest) -> Result<SyncToO
 
     Ok(SyncToObsidianResponse {
         tasks_synced: tasks_response.total,
+        tasks: tasks_response.tasks,
         file_path,
         content,
     })

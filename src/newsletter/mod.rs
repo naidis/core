@@ -4,6 +4,7 @@ use async_std::net::TcpStream;
 use chrono::{DateTime, Utc};
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
@@ -34,34 +35,42 @@ impl From<async_imap::error::Error> for NewsletterError {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct ImapConfig {
     pub host: String,
     pub port: u16,
     pub username: String,
     pub password: String,
     pub use_tls: bool,
+    #[ts(optional)]
     pub folder: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct Newsletter {
     pub id: String,
+    #[ts(optional)]
     pub message_id: Option<String>,
+    #[ts(optional)]
     pub from_name: Option<String>,
     pub from_email: String,
     pub subject: String,
     pub content_text: String,
+    #[ts(optional)]
     pub content_html: Option<String>,
     pub received_at: DateTime<Utc>,
     pub saved_at: DateTime<Utc>,
     pub is_read: bool,
     pub is_starred: bool,
     pub labels: Vec<String>,
+    #[ts(optional)]
     pub sender_info: Option<SenderInfo>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct SenderInfo {
     pub name: String,
     pub email: String,
@@ -69,37 +78,52 @@ pub struct SenderInfo {
     pub article_count: usize,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct FetchNewslettersRequest {
     pub config: ImapConfig,
+    #[ts(optional)]
     pub limit: Option<usize>,
+    #[ts(optional)]
     pub since: Option<DateTime<Utc>>,
+    #[ts(optional)]
     pub sender_filter: Option<Vec<String>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct NewsletterQuery {
+    #[ts(optional)]
     pub sender_email: Option<String>,
+    #[ts(optional)]
     pub is_read: Option<bool>,
+    #[ts(optional)]
     pub is_starred: Option<bool>,
+    #[ts(optional)]
     pub labels: Option<Vec<String>>,
+    #[ts(optional)]
     pub search: Option<String>,
+    #[ts(optional)]
     pub limit: Option<usize>,
+    #[ts(optional)]
     pub offset: Option<usize>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct NewsletterToMarkdownRequest {
     pub id: String,
     pub include_metadata: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct SubscriptionRule {
     pub id: String,
     pub sender_pattern: String,
     pub auto_save: bool,
     pub auto_labels: Vec<String>,
+    #[ts(optional)]
     pub save_folder: Option<String>,
 }
 

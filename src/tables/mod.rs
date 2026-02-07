@@ -1,21 +1,25 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct Table {
     pub headers: Vec<String>,
     pub rows: Vec<Vec<String>>,
     pub alignments: Vec<Alignment>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq)]
+#[ts(export, export_to = "bindings/")]
 pub enum Alignment {
     Left,
     Center,
     Right,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct ParseTableRequest {
     pub markdown: String,
 }
@@ -70,9 +74,11 @@ fn parse_alignments(line: &str, count: usize) -> Vec<Alignment> {
     alignments
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct FormatTableRequest {
     pub table: Table,
+    #[ts(optional)]
     pub pretty: Option<bool>,
 }
 
@@ -165,11 +171,14 @@ fn format_compact_table(table: &Table) -> Result<String> {
     Ok(output.trim_end().to_string())
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct SortTableRequest {
     pub table: Table,
     pub column: usize,
+    #[ts(optional)]
     pub descending: Option<bool>,
+    #[ts(optional)]
     pub numeric: Option<bool>,
 }
 
@@ -207,10 +216,12 @@ pub fn sort_table(request: &SortTableRequest) -> Result<Table> {
     Ok(table)
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct AddRowRequest {
     pub table: Table,
     pub row: Vec<String>,
+    #[ts(optional)]
     pub position: Option<usize>,
 }
 
@@ -236,11 +247,14 @@ pub fn add_row(request: &AddRowRequest) -> Result<Table> {
     Ok(table)
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct AddColumnRequest {
     pub table: Table,
     pub header: String,
+    #[ts(optional)]
     pub default_value: Option<String>,
+    #[ts(optional)]
     pub position: Option<usize>,
 }
 
@@ -263,7 +277,8 @@ pub fn add_column(request: &AddColumnRequest) -> Result<Table> {
     Ok(table)
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct DeleteRowRequest {
     pub table: Table,
     pub row_index: usize,
@@ -277,7 +292,8 @@ pub fn delete_row(request: &DeleteRowRequest) -> Result<Table> {
     Ok(table)
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct DeleteColumnRequest {
     pub table: Table,
     pub column_index: usize,
@@ -300,7 +316,8 @@ pub fn delete_column(request: &DeleteColumnRequest) -> Result<Table> {
     Ok(table)
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct MoveColumnRequest {
     pub table: Table,
     pub from_index: usize,
@@ -332,7 +349,8 @@ pub fn move_column(request: &MoveColumnRequest) -> Result<Table> {
     Ok(table)
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct SetAlignmentRequest {
     pub table: Table,
     pub column_index: usize,

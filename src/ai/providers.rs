@@ -2,8 +2,10 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 #[serde(rename_all = "lowercase")]
 #[derive(Default)]
 pub enum LlmProvider {
@@ -17,11 +19,15 @@ pub enum LlmProvider {
     Groq,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct LlmConfig {
     pub provider: LlmProvider,
+    #[ts(optional)]
     pub api_key: Option<String>,
+    #[ts(optional)]
     pub model: Option<String>,
+    #[ts(optional)]
     pub base_url: Option<String>,
 }
 
@@ -36,7 +42,8 @@ impl Default for LlmConfig {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct ChatMessage {
     pub role: String,
     pub content: String,
@@ -75,7 +82,8 @@ struct OpenAIRequest {
     temperature: f32,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 struct OpenAIMessage {
     role: String,
     content: String,
@@ -172,7 +180,8 @@ struct AnthropicRequest {
     messages: Vec<AnthropicMessage>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 struct AnthropicMessage {
     role: String,
     content: String,

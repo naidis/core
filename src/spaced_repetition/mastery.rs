@@ -1,49 +1,66 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use uuid::Uuid;
 
 use super::algorithm::{AlgorithmType, HalfLifeData, SM2Data};
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq)]
+#[ts(export, export_to = "bindings/")]
 #[serde(rename_all = "snake_case")]
 pub enum MasteryCardType {
     QA,
     Cloze,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct MasteryCard {
     pub id: String,
     pub highlight_id: String,
     pub card_type: MasteryCardType,
+    #[ts(optional)]
     pub question: Option<String>,
+    #[ts(optional)]
     pub answer: Option<String>,
+    #[ts(optional)]
     pub cloze_text: Option<String>,
     pub cloze_deletions: Vec<ClozeDeletion>,
+    #[ts(optional)]
     pub sm2: Option<SM2Data>,
+    #[ts(optional)]
     pub half_life: Option<HalfLifeData>,
     pub review_count: u32,
+    #[ts(optional)]
     pub last_reviewed_at: Option<DateTime<Utc>>,
+    #[ts(optional)]
     pub next_review_at: Option<DateTime<Utc>>,
     pub is_suspended: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct ClozeDeletion {
     pub start: usize,
     pub end: usize,
+    #[ts(optional)]
     pub hint: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct CreateMasteryCardRequest {
     pub highlight_id: String,
     pub card_type: MasteryCardType,
+    #[ts(optional)]
     pub question: Option<String>,
+    #[ts(optional)]
     pub answer: Option<String>,
+    #[ts(optional)]
     pub cloze_text: Option<String>,
+    #[ts(optional)]
     pub cloze_deletions: Option<Vec<ClozeDeletion>>,
 }
 
@@ -104,23 +121,36 @@ impl MasteryCard {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct UpdateMasteryCardRequest {
     pub id: String,
+    #[ts(optional)]
     pub question: Option<String>,
+    #[ts(optional)]
     pub answer: Option<String>,
+    #[ts(optional)]
     pub cloze_text: Option<String>,
+    #[ts(optional)]
     pub cloze_deletions: Option<Vec<ClozeDeletion>>,
+    #[ts(optional)]
     pub is_suspended: Option<bool>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct MasteryCardQuery {
+    #[ts(optional)]
     pub highlight_id: Option<String>,
+    #[ts(optional)]
     pub card_type: Option<MasteryCardType>,
+    #[ts(optional)]
     pub is_suspended: Option<bool>,
+    #[ts(optional)]
     pub due_before: Option<DateTime<Utc>>,
+    #[ts(optional)]
     pub limit: Option<usize>,
+    #[ts(optional)]
     pub offset: Option<usize>,
 }
 

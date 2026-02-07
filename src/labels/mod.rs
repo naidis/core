@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
@@ -18,42 +19,56 @@ pub enum LabelError {
     AlreadyExists(String),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct Label {
     pub id: String,
     pub name: String,
     pub color: String,
+    #[ts(optional)]
     pub description: Option<String>,
+    #[ts(optional)]
     pub parent_id: Option<String>,
     pub item_count: usize,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct CreateLabelRequest {
     pub name: String,
+    #[ts(optional)]
     pub color: Option<String>,
+    #[ts(optional)]
     pub description: Option<String>,
+    #[ts(optional)]
     pub parent_id: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct UpdateLabelRequest {
     pub id: String,
+    #[ts(optional)]
     pub name: Option<String>,
+    #[ts(optional)]
     pub color: Option<String>,
+    #[ts(optional)]
     pub description: Option<String>,
+    #[ts(optional)]
     pub parent_id: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct LabelTree {
     pub label: Label,
     pub children: Vec<LabelTree>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct LabelStats {
     pub total_labels: usize,
     pub labels_with_items: usize,

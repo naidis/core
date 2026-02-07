@@ -18,6 +18,7 @@ pub mod stats;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
@@ -47,7 +48,8 @@ pub enum SpacedRepetitionError {
 }
 
 /// Main configuration for the spaced repetition system
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct SpacedRepetitionConfig {
     /// Which algorithm to use
     pub algorithm_type: AlgorithmType,
@@ -74,20 +76,25 @@ impl Default for SpacedRepetitionConfig {
 }
 
 /// Spaced repetition data for a highlight
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct HighlightSRData {
     pub highlight_id: String,
     /// SM-2 specific data (if using SM-2)
+    #[ts(optional)]
     pub sm2: Option<SM2Data>,
     /// Half-life specific data (if using half-life)
+    #[ts(optional)]
     pub half_life: Option<HalfLifeData>,
     /// Review status
     pub status: HighlightReviewStatus,
     /// Number of times reviewed
     pub review_count: u32,
     /// Last review date
+    #[ts(optional)]
     pub last_reviewed_at: Option<DateTime<Utc>>,
     /// Next scheduled review date
+    #[ts(optional)]
     pub next_review_at: Option<DateTime<Utc>>,
     /// Created at
     pub created_at: DateTime<Utc>,
@@ -121,7 +128,8 @@ impl HighlightSRData {
 }
 
 /// Review status for a highlight
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq)]
+#[ts(export, export_to = "bindings/")]
 #[serde(rename_all = "snake_case")]
 pub enum HighlightReviewStatus {
     /// Active in review rotation
@@ -424,7 +432,8 @@ impl SpacedRepetitionStore {
 }
 
 /// Action to take on a highlight during review
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 #[serde(rename_all = "snake_case")]
 pub enum HighlightReviewAction {
     Keep,

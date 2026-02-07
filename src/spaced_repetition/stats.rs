@@ -1,8 +1,10 @@
 use chrono::{DateTime, Duration, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct ReviewStats {
     pub total_reviews: u64,
     pub total_highlights_reviewed: u64,
@@ -25,7 +27,8 @@ impl Default for ReviewStats {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct DailyStats {
     pub date: String,
     pub highlights_reviewed: u32,
@@ -50,11 +53,14 @@ impl DailyStats {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
+#[ts(export, export_to = "bindings/")]
 pub struct StreakData {
     pub current_streak: u32,
     pub longest_streak: u32,
+    #[ts(optional)]
     pub last_review_date: Option<String>,
+    #[ts(optional)]
     pub streak_start_date: Option<String>,
 }
 
@@ -203,7 +209,8 @@ impl ReviewStats {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct StatsResponse {
     pub total_reviews: u64,
     pub total_highlights_reviewed: u64,

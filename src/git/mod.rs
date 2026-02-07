@@ -2,27 +2,33 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::process::Command;
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct GitConfig {
     pub vault_path: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct GitStatusRequest {
     pub config: GitConfig,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct FileStatus {
     pub path: String,
     pub status: String,
     pub staged: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct GitStatusResponse {
     pub is_repo: bool,
+    #[ts(optional)]
     pub branch: Option<String>,
     pub ahead: i32,
     pub behind: i32,
@@ -30,56 +36,73 @@ pub struct GitStatusResponse {
     pub staged: Vec<FileStatus>,
     pub untracked: Vec<FileStatus>,
     pub has_changes: bool,
+    pub files_changed: Vec<FileStatus>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct GitCommitRequest {
     pub config: GitConfig,
     pub message: String,
+    #[ts(optional)]
     pub add_all: Option<bool>,
+    #[ts(optional)]
     pub files: Option<Vec<String>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct GitCommitResponse {
     pub success: bool,
+    #[ts(optional)]
     pub commit_hash: Option<String>,
     pub message: String,
     pub files_committed: usize,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct GitPushRequest {
     pub config: GitConfig,
+    #[ts(optional)]
     pub force: Option<bool>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct GitPullRequest {
     pub config: GitConfig,
+    #[ts(optional)]
     pub rebase: Option<bool>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct GitSyncRequest {
     pub config: GitConfig,
+    #[ts(optional)]
     pub message: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct GitOperationResponse {
     pub success: bool,
     pub message: String,
+    #[ts(optional)]
     pub details: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct GitLogRequest {
     pub config: GitConfig,
+    #[ts(optional)]
     pub limit: Option<usize>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct GitLogEntry {
     pub hash: String,
     pub short_hash: String,
@@ -88,20 +111,25 @@ pub struct GitLogEntry {
     pub message: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct GitLogResponse {
     pub entries: Vec<GitLogEntry>,
     pub total: usize,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct GitDiffRequest {
     pub config: GitConfig,
+    #[ts(optional)]
     pub file: Option<String>,
+    #[ts(optional)]
     pub staged: Option<bool>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct GitDiffResponse {
     pub diff: String,
     pub files_changed: usize,
@@ -140,6 +168,7 @@ pub fn git_status(request: &GitStatusRequest) -> Result<GitStatusResponse> {
             staged: vec![],
             untracked: vec![],
             has_changes: false,
+            files_changed: vec![],
         });
     }
 
@@ -191,6 +220,11 @@ pub fn git_status(request: &GitStatusRequest) -> Result<GitStatusResponse> {
 
     let has_changes = !modified.is_empty() || !staged.is_empty() || !untracked.is_empty();
 
+    let mut files_changed = Vec::new();
+    files_changed.extend(modified.clone());
+    files_changed.extend(staged.clone());
+    files_changed.extend(untracked.clone());
+
     Ok(GitStatusResponse {
         is_repo: true,
         branch,
@@ -200,6 +234,7 @@ pub fn git_status(request: &GitStatusRequest) -> Result<GitStatusResponse> {
         staged,
         untracked,
         has_changes,
+        files_changed,
     })
 }
 

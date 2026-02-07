@@ -5,6 +5,7 @@
 use anyhow::Result;
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -13,7 +14,8 @@ use tokio::sync::RwLock;
 use super::limits::{FeatureGate, FreeLimits};
 
 /// Daily usage that resets at midnight UTC
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
+#[ts(export, export_to = "bindings/")]
 pub struct DailyUsage {
     pub date: NaiveDate,
     pub ai_queries: u32,
@@ -40,7 +42,8 @@ impl DailyUsage {
 }
 
 /// Persistent usage counts (not reset daily)
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
+#[ts(export, export_to = "bindings/")]
 pub struct PersistentUsage {
     /// Active RSS feed URLs
     pub rss_feed_urls: Vec<String>,
@@ -49,7 +52,8 @@ pub struct PersistentUsage {
 }
 
 /// Combined usage data
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
+#[ts(export, export_to = "bindings/")]
 pub struct UsageData {
     pub daily: DailyUsage,
     pub persistent: PersistentUsage,
@@ -279,7 +283,8 @@ impl UsageTracker {
 }
 
 /// Query usage stats (daily limits)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct QueryStats {
     pub used: u32,
     pub limit: u32,
@@ -287,14 +292,16 @@ pub struct QueryStats {
 }
 
 /// Count stats (persistent limits)
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct CountStats {
     pub current: u32,
     pub limit: u32,
 }
 
 /// Full usage statistics
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct UsageStats {
     pub ai_queries: QueryStats,
     pub rag_queries: QueryStats,

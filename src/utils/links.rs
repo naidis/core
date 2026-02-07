@@ -1,7 +1,9 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct NoteMetadata {
     pub path: String,
     pub title: String,
@@ -9,14 +11,17 @@ pub struct NoteMetadata {
     pub tags: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct LinkSuggestRequest {
     pub text: String,
     pub notes: Vec<NoteMetadata>,
+    #[ts(optional)]
     pub limit: Option<usize>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct LinkSuggestion {
     pub path: String,
     pub title: String,
@@ -24,7 +29,8 @@ pub struct LinkSuggestion {
     pub score: f32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct LinkSuggestResponse {
     pub suggestions: Vec<LinkSuggestion>,
     pub total: usize,
@@ -132,27 +138,31 @@ fn fuzzy_match(query: &str, target: &str) -> f32 {
     matched as f32 / query_chars.len() as f32
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct BacklinkRequest {
     pub note_path: String,
     pub all_notes: Vec<NoteContent>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct NoteContent {
     pub path: String,
     pub title: String,
     pub content: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct BacklinkResult {
     pub path: String,
     pub title: String,
     pub context: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct BacklinkResponse {
     pub backlinks: Vec<BacklinkResult>,
     pub total: usize,

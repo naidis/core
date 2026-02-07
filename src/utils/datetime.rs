@@ -1,15 +1,21 @@
 use anyhow::Result;
 use chrono::{DateTime, Datelike, Duration, Local, NaiveDate, TimeZone, Timelike, Utc};
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct DateTimeFormatRequest {
+    #[ts(optional)]
     pub format: Option<String>,
+    #[ts(optional)]
     pub timestamp: Option<i64>,
+    #[ts(optional)]
     pub timezone: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct DateTimeFormatResponse {
     pub formatted: String,
     pub timestamp: i64,
@@ -24,27 +30,36 @@ pub struct DateTimeFormatResponse {
     pub week_number: u32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct DateTimeParseRequest {
     pub input: String,
+    #[ts(optional)]
     pub format: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct DateTimeCalcRequest {
+    #[ts(optional)]
     pub base: Option<i64>,
+    #[ts(optional)]
     pub add_days: Option<i64>,
+    #[ts(optional)]
     pub add_hours: Option<i64>,
+    #[ts(optional)]
     pub add_minutes: Option<i64>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct DateTimeDiffRequest {
     pub from: i64,
     pub to: i64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct DateTimeDiffResponse {
     pub days: i64,
     pub hours: i64,
@@ -194,7 +209,8 @@ pub fn diff_datetime(request: &DateTimeDiffRequest) -> Result<DateTimeDiffRespon
     })
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct QuickDateRequest {
     pub kind: String,
 }

@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
@@ -16,7 +17,8 @@ pub enum ReadingError {
     NotFound(String),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq)]
+#[ts(export, export_to = "bindings/")]
 #[serde(rename_all = "lowercase")]
 #[derive(Default)]
 pub enum ReadingState {
@@ -28,7 +30,8 @@ pub enum ReadingState {
     Archived,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq)]
+#[ts(export, export_to = "bindings/")]
 #[serde(rename_all = "lowercase")]
 #[derive(Default)]
 pub enum ArticleType {
@@ -44,14 +47,19 @@ pub enum ArticleType {
     File,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct Article {
     pub id: String,
+    #[ts(optional)]
     pub url: Option<String>,
     pub title: String,
+    #[ts(optional)]
     pub author: Option<String>,
     pub content: String,
+    #[ts(optional)]
     pub excerpt: Option<String>,
+    #[ts(optional)]
     pub site_name: Option<String>,
     pub word_count: usize,
     pub reading_time_minutes: usize,
@@ -60,50 +68,78 @@ pub struct Article {
     pub progress: f32,
     pub labels: Vec<String>,
     pub is_favorite: bool,
+    #[ts(optional)]
     pub thumbnail_url: Option<String>,
     pub saved_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    #[ts(optional)]
     pub read_at: Option<DateTime<Utc>>,
+    #[ts(optional)]
     pub archived_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct SaveArticleRequest {
+    #[ts(optional)]
     pub url: Option<String>,
     pub title: String,
+    #[ts(optional)]
     pub author: Option<String>,
     pub content: String,
+    #[ts(optional)]
     pub excerpt: Option<String>,
+    #[ts(optional)]
     pub site_name: Option<String>,
+    #[ts(optional)]
     pub article_type: Option<ArticleType>,
+    #[ts(optional)]
     pub labels: Option<Vec<String>>,
+    #[ts(optional)]
     pub thumbnail_url: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct UpdateArticleRequest {
     pub id: String,
+    #[ts(optional)]
     pub title: Option<String>,
+    #[ts(optional)]
     pub state: Option<ReadingState>,
+    #[ts(optional)]
     pub progress: Option<f32>,
+    #[ts(optional)]
     pub labels: Option<Vec<String>>,
+    #[ts(optional)]
     pub is_favorite: Option<bool>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct ArticleQuery {
+    #[ts(optional)]
     pub state: Option<ReadingState>,
+    #[ts(optional)]
     pub article_type: Option<ArticleType>,
+    #[ts(optional)]
     pub labels: Option<Vec<String>>,
+    #[ts(optional)]
     pub is_favorite: Option<bool>,
+    #[ts(optional)]
     pub search: Option<String>,
+    #[ts(optional)]
     pub sort_by: Option<SortBy>,
+    #[ts(optional)]
     pub sort_order: Option<SortOrder>,
+    #[ts(optional)]
     pub limit: Option<usize>,
+    #[ts(optional)]
     pub offset: Option<usize>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 #[serde(rename_all = "snake_case")]
 pub enum SortBy {
     SavedAt,
@@ -113,14 +149,16 @@ pub enum SortBy {
     Progress,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 #[serde(rename_all = "lowercase")]
 pub enum SortOrder {
     Asc,
     Desc,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct ReadingStats {
     pub total_articles: usize,
     pub inbox_count: usize,

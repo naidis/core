@@ -220,6 +220,10 @@ pub async fn run_http_server(host: &str, port: u16) -> Result<()> {
         .route("/api/ai/related", post(ai_related_notes))
         .route("/api/audio/transcribe", post(audio_transcribe))
         .route("/api/audio/model/download", post(audio_model_download))
+        .route("/api/config", get(config_get))
+        .route("/api/config", post(config_update))
+        .route("/api/vault/folders", post(vault_folders))
+        .route("/api/vault/tags", post(vault_tags))
         .route("/rpc", post(json_rpc_handler))
         .layer(cors)
         .with_state(state);
@@ -2957,4 +2961,149 @@ async fn audio_model_download(Json(request): Json<serde_json::Value>) -> impl In
             Json(serde_json::json!({"error": e.to_string()})),
         ),
     }
+}
+
+use std::sync::OnceLock;
+use tokio::sync::RwLock;
+
+static EXTENSION_CONFIG: OnceLock<RwLock<ExtensionConfig>> = OnceLock::new();
+
+fn get_extension_config() -> &'static RwLock<ExtensionConfig> {
+    EXTENSION_CONFIG.get_or_init(|| RwLock::new(ExtensionConfig::default()))
+}
+
+async fn config_get() -> impl IntoResponse {
+    let config = get_extension_config().read().await;
+    (
+        StatusCode::OK,
+        Json(serde_json::to_value(config.clone()).unwrap()),
+    )
+}
+
+async fn config_update(Json(request): Json<ConfigUpdateRequest>) -> impl IntoResponse {
+    let mut config = get_extension_config().write().await;
+    if let Some(vault_path) = request.vault_path {
+        config.vault_path = vault_path;
+    }
+    if let Some(folder) = request.default_save_folder {
+        config.default_save_folder = folder;
+    }
+    if let Some(template) = request.web_clip_template {
+        config.web_clip_template = template;
+    }
+    (
+        StatusCode::OK,
+        Json(serde_json::json!({"success": true})),
+    )
+}
+
+async fn vault_folders(Json(request): Json<FoldersRequest>) -> impl IntoResponse {
+    match collect_folders(&request.vault_path) {
+        Ok(folders) => (
+            StatusCode::OK,
+            Json(serde_json::to_value(FoldersResponse { folders }).unwrap()),
+        ),
+        Err(e) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(serde_json::json!({"error": e.to_string()})),
+        ),
+    }
+}
+
+fn collect_folders(vault_path: &str) -> Result<Vec<String>> {
+    let mut folders = Vec::new();
+    collect_folders_recursive(std::path::Path::new(vault_path), vault_path, &mut folders)?;
+    folders.sort();
+    Ok(folders)
+}
+
+fn collect_folders_recursive(
+    dir: &std::path::Path,
+    vault_root: &str,
+    folders: &mut Vec<String>,
+) -> Result<()> {
+    if !dir.is_dir() {
+        return Ok(());
+    }
+    for entry in std::fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_dir() {
+            let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+            if name.starts_with('.') {
+                continue;
+            }
+            let relative = path
+                .strip_prefix(vault_root)
+                .unwrap_or(&path)
+                .to_string_lossy()
+                .to_string();
+            folders.push(relative.clone());
+            collect_folders_recursive(&path, vault_root, folders)?;
+        }
+    }
+    Ok(())
+}
+
+async fn vault_tags(Json(request): Json<TagsRequest>) -> impl IntoResponse {
+    let limit = request.limit.unwrap_or(100);
+    match collect_tags(&request.vault_path, limit) {
+        Ok(tags) => (
+            StatusCode::OK,
+            Json(serde_json::to_value(TagsResponse { tags }).unwrap()),
+        ),
+        Err(e) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(serde_json::json!({"error": e.to_string()})),
+        ),
+    }
+}
+
+fn collect_tags(vault_path: &str, limit: usize) -> Result<Vec<String>> {
+    use std::collections::HashSet;
+    let mut tags = HashSet::new();
+    collect_tags_recursive(std::path::Path::new(vault_path), &mut tags, limit)?;
+    let mut result: Vec<String> = tags.into_iter().collect();
+    result.sort();
+    Ok(result)
+}
+
+fn collect_tags_recursive(
+    dir: &std::path::Path,
+    tags: &mut std::collections::HashSet<String>,
+    limit: usize,
+) -> Result<()> {
+    use std::sync::LazyLock;
+    static TAG_REGEX: LazyLock<regex::Regex> =
+        LazyLock::new(|| regex::Regex::new(r"#([a-zA-Z][a-zA-Z0-9_/-]*)").unwrap());
+
+    if tags.len() >= limit || !dir.is_dir() {
+        return Ok(());
+    }
+    for entry in std::fs::read_dir(dir)? {
+        if tags.len() >= limit {
+            break;
+        }
+        let entry = entry?;
+        let path = entry.path();
+        let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+        if name.starts_with('.') {
+            continue;
+        }
+        if path.is_dir() {
+            collect_tags_recursive(&path, tags, limit)?;
+        } else if path.extension().map(|e| e == "md").unwrap_or(false) {
+            if let Ok(content) = std::fs::read_to_string(&path) {
+                for cap in TAG_REGEX.captures_iter(&content) {
+                    if let Some(tag) = cap.get(1) {
+                        tags.insert(tag.as_str().to_string());
+                        if tags.len() >= limit {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Ok(())
 }

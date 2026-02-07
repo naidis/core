@@ -2,14 +2,18 @@ use anyhow::Result;
 use chrono::{Datelike, Duration, Local, NaiveDate, Weekday};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct NlpDateParseRequest {
     pub text: String,
+    #[ts(optional)]
     pub reference_date: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct NlpDateParseResponse {
     pub date: String,
     pub formatted: String,
@@ -215,12 +219,14 @@ fn days_in_month(year: i32, month: u32) -> u32 {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct DateSuggestRequest {
     pub partial: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct DateSuggestion {
     pub text: String,
     pub date: String,

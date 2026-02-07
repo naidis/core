@@ -2,20 +2,26 @@ use anyhow::Result;
 use chrono::{Duration, Local};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
 const GCAL_API_BASE: &str = "https://www.googleapis.com/calendar/v3";
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct GCalConfig {
     pub access_token: String,
+    #[ts(optional)]
     pub calendar_id: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct GCalEvent {
     pub id: String,
     pub summary: String,
+    #[ts(optional)]
     pub description: Option<String>,
+    #[ts(optional)]
     pub location: Option<String>,
     pub start: EventDateTime,
     pub end: EventDateTime,
@@ -25,17 +31,24 @@ pub struct GCalEvent {
     pub is_all_day: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct EventDateTime {
+    #[ts(optional)]
     pub date: Option<String>,
+    #[ts(optional)]
     pub date_time: Option<String>,
+    #[ts(optional)]
     pub time_zone: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct Attendee {
     pub email: String,
+    #[ts(optional)]
     pub display_name: Option<String>,
+    #[ts(optional)]
     pub response_status: Option<String>,
 }
 
@@ -76,51 +89,71 @@ struct EventsListResponse {
     items: Option<Vec<ApiEvent>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "GCalFetchEventsRequest")]
 pub struct FetchEventsRequest {
     pub config: GCalConfig,
+    #[ts(optional)]
     pub time_min: Option<String>,
+    #[ts(optional)]
     pub time_max: Option<String>,
+    #[ts(optional)]
     pub max_results: Option<i32>,
+    #[ts(optional)]
     pub single_events: Option<bool>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "GCalFetchEventsResponse")]
 pub struct FetchEventsResponse {
     pub events: Vec<GCalEvent>,
     pub total: usize,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "GCalFetchTodayRequest")]
 pub struct FetchTodayEventsRequest {
     pub config: GCalConfig,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "GCalCreateEventRequest")]
 pub struct CreateEventRequest {
     pub config: GCalConfig,
     pub summary: String,
+    #[ts(optional)]
     pub description: Option<String>,
+    #[ts(optional)]
     pub location: Option<String>,
+    #[ts(optional)]
     pub start_date: Option<String>,
+    #[ts(optional)]
     pub start_datetime: Option<String>,
+    #[ts(optional)]
     pub end_date: Option<String>,
+    #[ts(optional)]
     pub end_datetime: Option<String>,
+    #[ts(optional)]
     pub attendees: Option<Vec<String>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "GCalSyncToObsidianRequest")]
 pub struct SyncToObsidianRequest {
     pub config: GCalConfig,
     pub vault_path: String,
     pub target_folder: String,
+    #[ts(optional)]
     pub days_ahead: Option<i32>,
+    #[ts(optional)]
     pub format: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "GCalSyncToObsidianResponse")]
 pub struct SyncToObsidianResponse {
     pub events_synced: usize,
+    pub events: Vec<GCalEvent>,
     pub file_path: String,
     pub content: String,
 }
@@ -352,6 +385,7 @@ pub async fn sync_to_obsidian(request: &SyncToObsidianRequest) -> Result<SyncToO
 
     Ok(SyncToObsidianResponse {
         events_synced: events_response.total,
+        events: events_response.events,
         file_path,
         content,
     })

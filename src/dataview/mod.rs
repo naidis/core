@@ -2,25 +2,34 @@ use anyhow::Result;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct NoteMeta {
     pub path: String,
     pub name: String,
     pub frontmatter: HashMap<String, serde_json::Value>,
     pub tags: Vec<String>,
     pub links: Vec<String>,
+    #[ts(optional)]
     pub created: Option<i64>,
+    #[ts(optional)]
     pub modified: Option<i64>,
+    #[ts(optional)]
     pub size: Option<u64>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct ParseNoteRequest {
     pub content: String,
     pub path: String,
+    #[ts(optional)]
     pub created: Option<i64>,
+    #[ts(optional)]
     pub modified: Option<i64>,
+    #[ts(optional)]
     pub size: Option<u64>,
 }
 
@@ -106,25 +115,34 @@ fn extract_links(content: &str) -> Vec<String> {
         .collect()
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "DataviewQueryRequest")]
 pub struct QueryRequest {
     pub notes: Vec<NoteMeta>,
+    #[ts(optional)]
     pub from: Option<String>,
+    #[ts(optional)]
     pub where_clause: Option<String>,
+    #[ts(optional)]
     pub sort_by: Option<String>,
+    #[ts(optional)]
     pub sort_desc: Option<bool>,
+    #[ts(optional)]
     pub limit: Option<usize>,
+    #[ts(optional)]
     pub fields: Option<Vec<String>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "DataviewQueryResult")]
 pub struct QueryResult {
     pub path: String,
     pub name: String,
     pub fields: HashMap<String, serde_json::Value>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "DataviewQueryResponse")]
 pub struct QueryResponse {
     pub results: Vec<QueryResult>,
     pub total: usize,
@@ -278,23 +296,31 @@ fn get_sort_value(note: &NoteMeta, sort_by: &str) -> String {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "DataviewTableRequest")]
 pub struct TableQueryRequest {
     pub notes: Vec<NoteMeta>,
+    #[ts(optional)]
     pub from: Option<String>,
+    #[ts(optional)]
     pub where_clause: Option<String>,
     pub columns: Vec<String>,
+    #[ts(optional)]
     pub sort_by: Option<String>,
+    #[ts(optional)]
     pub sort_desc: Option<bool>,
+    #[ts(optional)]
     pub limit: Option<usize>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "DataviewTableRow")]
 pub struct TableRow {
     pub values: Vec<serde_json::Value>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/", rename = "DataviewTableResponse")]
 pub struct TableQueryResponse {
     pub headers: Vec<String>,
     pub rows: Vec<TableRow>,

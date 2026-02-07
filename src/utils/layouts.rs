@@ -1,19 +1,23 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct LayoutPreset {
     pub id: String,
     pub name: String,
+    #[ts(optional)]
     pub description: Option<String>,
     pub layout_data: serde_json::Value,
     pub created_at: i64,
     pub updated_at: i64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
+#[ts(export, export_to = "bindings/")]
 pub struct LayoutStore {
     pub presets: HashMap<String, LayoutPreset>,
 }
@@ -45,27 +49,35 @@ fn save_store(store: &LayoutStore) -> Result<()> {
     Ok(())
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct LayoutSaveRequest {
     pub name: String,
+    #[ts(optional)]
     pub description: Option<String>,
     pub layout_data: serde_json::Value,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct LayoutUpdateRequest {
     pub id: String,
+    #[ts(optional)]
     pub name: Option<String>,
+    #[ts(optional)]
     pub description: Option<String>,
+    #[ts(optional)]
     pub layout_data: Option<serde_json::Value>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct LayoutDeleteRequest {
     pub id: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct LayoutListResponse {
     pub presets: Vec<LayoutPreset>,
     pub total: usize,

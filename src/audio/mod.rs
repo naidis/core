@@ -1,15 +1,18 @@
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use std::path::Path;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct TranscriptionSegment {
     pub start: f64,
     pub end: f64,
     pub text: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct TranscriptionResult {
     pub text: String,
     pub segments: Vec<TranscriptionSegment>,
@@ -17,11 +20,15 @@ pub struct TranscriptionResult {
     pub duration: f64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct TranscribeRequest {
     pub audio_path: String,
+    #[ts(optional)]
     pub model_path: Option<String>,
+    #[ts(optional)]
     pub language: Option<String>,
+    #[ts(optional)]
     pub translate: Option<bool>,
 }
 

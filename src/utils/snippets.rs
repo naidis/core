@@ -2,19 +2,24 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct Snippet {
     pub id: String,
     pub trigger: String,
     pub content: String,
+    #[ts(optional)]
     pub description: Option<String>,
+    #[ts(optional)]
     pub category: Option<String>,
     pub created_at: i64,
     pub updated_at: i64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
+#[ts(export, export_to = "bindings/")]
 pub struct SnippetStore {
     pub snippets: HashMap<String, Snippet>,
 }
@@ -46,40 +51,54 @@ fn save_store(store: &SnippetStore) -> Result<()> {
     Ok(())
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct SnippetCreateRequest {
     pub trigger: String,
     pub content: String,
+    #[ts(optional)]
     pub description: Option<String>,
+    #[ts(optional)]
     pub category: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct SnippetUpdateRequest {
     pub id: String,
+    #[ts(optional)]
     pub trigger: Option<String>,
+    #[ts(optional)]
     pub content: Option<String>,
+    #[ts(optional)]
     pub description: Option<String>,
+    #[ts(optional)]
     pub category: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct SnippetDeleteRequest {
     pub id: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct SnippetExpandRequest {
     pub trigger: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct SnippetListRequest {
+    #[ts(optional)]
     pub category: Option<String>,
+    #[ts(optional)]
     pub search: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct SnippetListResponse {
     pub snippets: Vec<Snippet>,
     pub total: usize,

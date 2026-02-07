@@ -58,6 +58,8 @@ ollama-rs = { version = "0.3", features = ["stream"] }
 whisper-rs = "0.12"
 hound = "3.5"
 
+ts-rs = { version = "10", features = ["chrono-impl", "serde-json-impl", "serde-compat"] }
+
 [[bin]]
 name = "naidis-core"
 path = "src/main.rs"

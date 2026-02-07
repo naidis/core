@@ -1,48 +1,59 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use std::path::{Path, PathBuf};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct VaultConfig {
     pub path: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct VaultSaveRequest {
     pub vault_path: String,
     pub file_path: String,
     pub content: String,
+    #[ts(optional)]
     pub overwrite: Option<bool>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct VaultSaveResponse {
     pub success: bool,
     pub path: String,
     pub message: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct VaultReadRequest {
     pub vault_path: String,
     pub file_path: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct VaultReadResponse {
     pub content: String,
     pub path: String,
     pub exists: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct VaultListRequest {
     pub vault_path: String,
+    #[ts(optional)]
     pub folder: Option<String>,
+    #[ts(optional)]
     pub extension: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct VaultFileInfo {
     pub name: String,
     pub path: String,
@@ -51,19 +62,22 @@ pub struct VaultFileInfo {
     pub modified: i64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct VaultListResponse {
     pub files: Vec<VaultFileInfo>,
     pub total: usize,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct VaultDeleteRequest {
     pub vault_path: String,
     pub file_path: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct VaultMoveRequest {
     pub vault_path: String,
     pub from_path: String,
@@ -244,14 +258,17 @@ pub fn move_file(request: &VaultMoveRequest) -> Result<bool> {
     Ok(true)
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct VaultSearchRequest {
     pub vault_path: String,
     pub query: String,
+    #[ts(optional)]
     pub limit: Option<usize>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct VaultSearchResult {
     pub path: String,
     pub name: String,
@@ -259,7 +276,8 @@ pub struct VaultSearchResult {
     pub line_number: usize,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct VaultSearchResponse {
     pub results: Vec<VaultSearchResult>,
     pub total: usize,

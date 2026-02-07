@@ -4,6 +4,7 @@
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
 /// Free tier limits (matching app/src/core/license.ts FREE_LIMITS)
 #[derive(Debug, Clone)]
@@ -40,7 +41,8 @@ impl FreeLimits {
 }
 
 /// User's subscription tier
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq)]
+#[ts(export, export_to = "bindings/")]
 #[serde(tag = "type", rename_all = "snake_case")]
 #[derive(Default)]
 pub enum TierType {
@@ -109,7 +111,8 @@ impl TierType {
 }
 
 /// Result of checking feature access
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 #[serde(tag = "status", rename_all = "snake_case")]
 pub enum FeatureGate {
     /// Feature is allowed

@@ -1,45 +1,58 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use uuid::Uuid;
 
 use super::algorithm::halflife;
 use super::{HighlightReviewStatus, SpacedRepetitionError, SpacedRepetitionStore};
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq)]
+#[ts(export, export_to = "bindings/")]
 #[serde(rename_all = "snake_case")]
 pub enum ReviewItemType {
     Highlight,
     MasteryCard,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct ReviewItem {
     pub id: String,
     pub item_type: ReviewItemType,
     pub highlight_id: String,
     pub text: String,
+    #[ts(optional)]
     pub source_title: Option<String>,
+    #[ts(optional)]
     pub source_author: Option<String>,
+    #[ts(optional)]
     pub note: Option<String>,
+    #[ts(optional)]
     pub question: Option<String>,
+    #[ts(optional)]
     pub answer: Option<String>,
+    #[ts(optional)]
     pub recall_probability: Option<f64>,
+    #[ts(optional)]
     pub last_reviewed_at: Option<DateTime<Utc>>,
     pub review_count: u32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct ReviewSession {
     pub id: String,
     pub items: Vec<ReviewItem>,
     pub current_index: usize,
     pub completed_count: usize,
     pub started_at: DateTime<Utc>,
+    #[ts(optional)]
     pub completed_at: Option<DateTime<Utc>>,
     pub session_type: ReviewSessionType,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq)]
+#[ts(export, export_to = "bindings/")]
 #[serde(rename_all = "snake_case")]
 pub enum ReviewSessionType {
     Daily,
@@ -47,12 +60,17 @@ pub enum ReviewSessionType {
     Custom,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct CreateSessionRequest {
     pub session_type: ReviewSessionType,
+    #[ts(optional)]
     pub highlight_limit: Option<usize>,
+    #[ts(optional)]
     pub mastery_limit: Option<usize>,
+    #[ts(optional)]
     pub tags: Option<Vec<String>>,
+    #[ts(optional)]
     pub document_ids: Option<Vec<String>>,
 }
 

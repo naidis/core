@@ -2,33 +2,43 @@ use anyhow::{Context, Result};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use std::collections::HashMap;
 use std::path::Path;
 
 /// Kindle highlight extracted from My Clippings.txt
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct KindleHighlight {
     pub id: String,
     pub book_title: String,
+    #[ts(optional)]
     pub book_author: Option<String>,
     pub text: String,
+    #[ts(optional)]
     pub note: Option<String>,
+    #[ts(optional)]
     pub location: Option<String>,
+    #[ts(optional)]
     pub page: Option<u32>,
+    #[ts(optional)]
     pub highlighted_at: Option<String>,
 }
 
 /// A book with its highlights
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct KindleBook {
     pub title: String,
+    #[ts(optional)]
     pub author: Option<String>,
     pub highlights: Vec<KindleHighlight>,
     pub highlight_count: usize,
 }
 
 /// Response from kindle sync
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct KindleSyncResponse {
     pub books: Vec<KindleBook>,
     pub total_highlights: usize,

@@ -2,8 +2,10 @@ use anyhow::Result;
 use chrono::{Local, NaiveDate};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq)]
+#[ts(export, export_to = "bindings/")]
 pub enum TaskStatus {
     Todo,
     Done,
@@ -12,49 +14,71 @@ pub enum TaskStatus {
     Scheduled,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct Task {
     pub id: String,
     pub text: String,
     pub status: TaskStatus,
+    pub completed: bool,
+    #[ts(optional)]
     pub due_date: Option<String>,
+    #[ts(optional)]
     pub scheduled_date: Option<String>,
+    #[ts(optional)]
     pub start_date: Option<String>,
+    #[ts(optional)]
     pub done_date: Option<String>,
+    #[ts(optional)]
     pub priority: Option<String>,
     pub tags: Vec<String>,
     pub file_path: String,
+    pub file: String,
     pub line_number: usize,
+    pub line: usize,
     pub raw_line: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct TaskParseRequest {
     pub content: String,
     pub file_path: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct TaskParseResponse {
     pub tasks: Vec<Task>,
     pub total: usize,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct TaskQueryRequest {
     pub tasks: Vec<Task>,
+    #[ts(optional)]
     pub filter_status: Option<Vec<String>>,
+    #[ts(optional)]
     pub filter_due_before: Option<String>,
+    #[ts(optional)]
     pub filter_due_after: Option<String>,
+    #[ts(optional)]
     pub filter_tags: Option<Vec<String>>,
+    #[ts(optional)]
     pub filter_priority: Option<Vec<String>>,
+    #[ts(optional)]
     pub filter_path: Option<String>,
+    #[ts(optional)]
     pub sort_by: Option<String>,
+    #[ts(optional)]
     pub sort_desc: Option<bool>,
+    #[ts(optional)]
     pub limit: Option<usize>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct TaskQueryResponse {
     pub tasks: Vec<Task>,
     pub total: usize,
@@ -110,7 +134,8 @@ pub fn parse_tasks(request: &TaskParseRequest) -> Result<TaskParseResponse> {
             tasks.push(Task {
                 id: format!("{}:{}", request.file_path, line_num + 1),
                 text: clean_text,
-                status,
+                status: status.clone(),
+                completed: status == TaskStatus::Done,
                 due_date,
                 scheduled_date,
                 start_date,
@@ -118,7 +143,9 @@ pub fn parse_tasks(request: &TaskParseRequest) -> Result<TaskParseResponse> {
                 priority,
                 tags,
                 file_path: request.file_path.clone(),
+                file: request.file_path.clone(),
                 line_number: line_num + 1,
+                line: line_num + 1,
                 raw_line: line.to_string(),
             });
         }

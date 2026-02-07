@@ -1,14 +1,17 @@
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq)]
+#[ts(export, export_to = "bindings/")]
 #[serde(rename_all = "snake_case")]
 pub enum AlgorithmType {
     SM2,
     HalfLife,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 #[serde(rename_all = "snake_case")]
 pub enum ReviewFeedback {
     Again,
@@ -26,7 +29,8 @@ pub trait Algorithm {
     fn get_recall_probability(&self) -> f64;
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct SM2Data {
     pub ease_factor: f32,
     pub interval: i32,
@@ -56,9 +60,11 @@ impl Algorithm for SM2Data {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct HalfLifeData {
     pub half_life_days: f32,
+    #[ts(optional)]
     pub last_reviewed_at: Option<DateTime<Utc>>,
 }
 

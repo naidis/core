@@ -2,13 +2,17 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 use std::path::PathBuf;
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct HistoryEntry {
     pub id: String,
     pub command: String,
+    #[ts(optional)]
     pub args: Option<serde_json::Value>,
     pub timestamp: i64,
+    #[ts(optional)]
     pub source: Option<String>,
 }
 
@@ -54,27 +58,36 @@ fn save_store(store: &HistoryStore) -> Result<()> {
     Ok(())
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct HistoryAddRequest {
     pub command: String,
+    #[ts(optional)]
     pub args: Option<serde_json::Value>,
+    #[ts(optional)]
     pub source: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct HistoryListRequest {
+    #[ts(optional)]
     pub limit: Option<usize>,
+    #[ts(optional)]
     pub command_filter: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct HistoryListResponse {
     pub entries: Vec<HistoryEntry>,
     pub total: usize,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct HistoryClearRequest {
+    #[ts(optional)]
     pub before: Option<i64>,
 }
 

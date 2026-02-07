@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
@@ -14,19 +15,28 @@ pub enum EpubError {
     NotFound(String),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct EpubMetadata {
+    #[ts(optional)]
     pub title: Option<String>,
+    #[ts(optional)]
     pub author: Option<String>,
+    #[ts(optional)]
     pub language: Option<String>,
+    #[ts(optional)]
     pub publisher: Option<String>,
+    #[ts(optional)]
     pub description: Option<String>,
+    #[ts(optional)]
     pub published_date: Option<String>,
+    #[ts(optional)]
     pub isbn: Option<String>,
     pub subjects: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct EpubChapter {
     pub index: usize,
     pub title: String,
@@ -34,7 +44,8 @@ pub struct EpubChapter {
     pub word_count: usize,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct EpubContent {
     pub metadata: EpubMetadata,
     pub chapters: Vec<EpubChapter>,
@@ -42,16 +53,19 @@ pub struct EpubContent {
     pub reading_time_minutes: usize,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct ParseEpubRequest {
     pub path: String,
     pub include_content: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct EpubToMarkdownRequest {
     pub path: String,
     pub include_metadata: bool,
+    #[ts(optional)]
     pub chapter_heading_level: Option<u8>,
 }
 

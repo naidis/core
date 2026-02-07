@@ -1,45 +1,59 @@
 use anyhow::Result;
 use chrono::{Datelike, Duration, Local, NaiveDate};
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct PeriodicNoteConfig {
     pub folder: String,
     pub format: String,
+    #[ts(optional)]
     pub template: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct DailyNoteRequest {
+    #[ts(optional)]
     pub date: Option<String>,
     pub config: PeriodicNoteConfig,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct WeeklyNoteRequest {
+    #[ts(optional)]
     pub date: Option<String>,
     pub config: PeriodicNoteConfig,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct MonthlyNoteRequest {
+    #[ts(optional)]
     pub date: Option<String>,
     pub config: PeriodicNoteConfig,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct YearlyNoteRequest {
+    #[ts(optional)]
     pub date: Option<String>,
     pub config: PeriodicNoteConfig,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct QuarterlyNoteRequest {
+    #[ts(optional)]
     pub date: Option<String>,
     pub config: PeriodicNoteConfig,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct PeriodicNoteInfo {
     pub path: String,
     pub filename: String,
@@ -240,7 +254,8 @@ pub fn generate_yearly_note(request: &YearlyNoteRequest) -> Result<PeriodicNoteI
     })
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct NavigatePeriodicRequest {
     pub current_date: String,
     pub period_type: String,

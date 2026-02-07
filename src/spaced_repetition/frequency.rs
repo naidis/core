@@ -1,15 +1,19 @@
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
+#[ts(export, export_to = "bindings/")]
 pub struct FrequencyTuning {
     pub documents: HashMap<String, DocumentFrequency>,
     pub source_types: HashMap<String, f32>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct DocumentFrequency {
     pub document_id: String,
+    #[ts(optional)]
     pub title: Option<String>,
     pub multiplier: f32,
     pub highlight_count: usize,
@@ -103,14 +107,17 @@ impl FrequencyTuning {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct SetDocumentFrequencyRequest {
     pub document_id: String,
     pub multiplier: f32,
+    #[ts(optional)]
     pub title: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct SetSourceTypeFrequencyRequest {
     pub source_type: String,
     pub multiplier: f32,

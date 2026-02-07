@@ -1,15 +1,18 @@
 use anyhow::Result;
 use ollama_rs::{generation::completion::request::GenerationRequest, Ollama};
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct OllamaModel {
     pub name: String,
     pub size: String,
     pub modified_at: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct OllamaStatus {
     pub available: bool,
     pub models: Vec<OllamaModel>,

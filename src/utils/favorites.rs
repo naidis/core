@@ -1,22 +1,28 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct FavoriteItem {
     pub id: String,
     pub item_type: String,
     pub item_id: String,
     pub name: String,
+    #[ts(optional)]
     pub description: Option<String>,
+    #[ts(optional)]
     pub icon: Option<String>,
+    #[ts(optional)]
     pub data: Option<serde_json::Value>,
     pub created_at: i64,
     pub order: i32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
+#[ts(export, export_to = "bindings/")]
 pub struct FavoriteStore {
     pub items: HashMap<String, FavoriteItem>,
     pub order_counter: i32,
@@ -49,32 +55,41 @@ fn save_store(store: &FavoriteStore) -> Result<()> {
     Ok(())
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct FavoriteAddRequest {
     pub item_type: String,
     pub item_id: String,
     pub name: String,
+    #[ts(optional)]
     pub description: Option<String>,
+    #[ts(optional)]
     pub icon: Option<String>,
+    #[ts(optional)]
     pub data: Option<serde_json::Value>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct FavoriteRemoveRequest {
     pub id: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct FavoriteReorderRequest {
     pub ids: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct FavoriteListRequest {
+    #[ts(optional)]
     pub item_type: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct FavoriteListResponse {
     pub items: Vec<FavoriteItem>,
     pub total: usize,
