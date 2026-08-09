@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use async_trait::async_trait;
+use futures::StreamExt;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -312,6 +313,171 @@ pub fn create_provider(config: &LlmConfig) -> Result<Box<dyn LlmProviderTrait>> 
             anyhow::bail!("Use dedicated local/ollama engine instead of provider abstraction")
         }
     }
+}
+
+pub async fn openai_stream(
+    api_key: &str,
+    model: &str,
+    message: &str,
+    system: Option<&str>,
+    tx: tokio::sync::mpsc::Sender<Result<String>>,
+) -> Result<()> {
+    openai_compatible_stream(
+        api_key,
+        model,
+        message,
+        system,
+        "https://api.openai.com/v1",
+        tx,
+    )
+    .await
+}
+
+pub async fn groq_stream(
+    api_key: &str,
+    model: &str,
+    message: &str,
+    system: Option<&str>,
+    tx: tokio::sync::mpsc::Sender<Result<String>>,
+) -> Result<()> {
+    openai_compatible_stream(
+        api_key,
+        model,
+        message,
+        system,
+        "https://api.groq.com/openai/v1",
+        tx,
+    )
+    .await
+}
+
+async fn openai_compatible_stream(
+    api_key: &str,
+    model: &str,
+    message: &str,
+    system: Option<&str>,
+    base_url: &str,
+    tx: tokio::sync::mpsc::Sender<Result<String>>,
+) -> Result<()> {
+    let client = Client::new();
+
+    let mut messages = Vec::new();
+    if let Some(sys) = system {
+        messages.push(serde_json::json!({"role": "system", "content": sys}));
+    }
+    messages.push(serde_json::json!({"role": "user", "content": message}));
+
+    let request_body = serde_json::json!({
+        "model": model,
+        "messages": messages,
+        "stream": true,
+        "max_tokens": 4096,
+    });
+
+    let response = client
+        .post(format!("{}/chat/completions", base_url))
+        .header("Authorization", format!("Bearer {}", api_key))
+        .header("Content-Type", "application/json")
+        .json(&request_body)
+        .send()
+        .await
+        .context("Failed to call streaming API")?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let text = response.text().await.unwrap_or_default();
+        anyhow::bail!("API error: {} - {}", status, text);
+    }
+
+    let mut stream = response.bytes_stream();
+
+    while let Some(chunk_result) = stream.next().await {
+        let chunk = chunk_result.context("Failed to read stream chunk")?;
+        let text = String::from_utf8_lossy(&chunk);
+
+        for line in text.lines() {
+            if line.starts_with("data: ") {
+                let data = line.trim_start_matches("data: ");
+                if data == "[DONE]" {
+                    return Ok(());
+                }
+
+                if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(data) {
+                    if let Some(content) = parsed["choices"][0]["delta"]["content"].as_str() {
+                        if tx.send(Ok(content.to_string())).await.is_err() {
+                            return Ok(());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
+pub async fn anthropic_stream(
+    api_key: &str,
+    model: &str,
+    message: &str,
+    system: Option<&str>,
+    tx: tokio::sync::mpsc::Sender<Result<String>>,
+) -> Result<()> {
+    let client = Client::new();
+
+    let mut request_body = serde_json::json!({
+        "model": model,
+        "max_tokens": 4096,
+        "messages": [{"role": "user", "content": message}],
+        "stream": true,
+    });
+
+    if let Some(sys) = system {
+        request_body["system"] = serde_json::json!(sys);
+    }
+
+    let response = client
+        .post("https://api.anthropic.com/v1/messages")
+        .header("x-api-key", api_key)
+        .header("anthropic-version", "2023-06-01")
+        .header("Content-Type", "application/json")
+        .json(&request_body)
+        .send()
+        .await
+        .context("Failed to call Anthropic streaming API")?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let text = response.text().await.unwrap_or_default();
+        anyhow::bail!("Anthropic API error: {} - {}", status, text);
+    }
+
+    let mut stream = response.bytes_stream();
+
+    while let Some(chunk_result) = stream.next().await {
+        let chunk = chunk_result.context("Failed to read stream chunk")?;
+        let text = String::from_utf8_lossy(&chunk);
+
+        for line in text.lines() {
+            if line.starts_with("data: ") {
+                let data = line.trim_start_matches("data: ");
+
+                if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(data) {
+                    if parsed["type"] == "content_block_delta" {
+                        if let Some(content) = parsed["delta"]["text"].as_str() {
+                            if tx.send(Ok(content.to_string())).await.is_err() {
+                                return Ok(());
+                            }
+                        }
+                    } else if parsed["type"] == "message_stop" {
+                        return Ok(());
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]

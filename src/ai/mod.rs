@@ -16,8 +16,9 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 
 use crate::rpc::{
-    AiChatRequest, AiChatResponse, AiIndexRequest, AiIndexResponse, AiRagRequest, AiRagResponse,
-    AiRagSource, AiSearchRequest, AiSearchResponse, AiSummarizeRequest, AiSummarizeResponse,
+    AiChatRequest, AiChatResponse, AiChatStreamRequest, AiIndexRequest, AiIndexResponse,
+    AiRagRequest, AiRagResponse, AiRagSource, AiSearchRequest, AiSearchResponse,
+    AiSummarizeRequest, AiSummarizeResponse,
 };
 
 static RAG_PIPELINE: std::sync::OnceLock<Arc<RwLock<Option<RagPipeline>>>> =
@@ -118,6 +119,89 @@ pub async fn chat(request: &AiChatRequest) -> Result<AiChatResponse> {
             Some(sources)
         },
     })
+}
+
+pub async fn chat_stream(
+    request: &AiChatStreamRequest,
+) -> Result<tokio::sync::mpsc::Receiver<Result<String>>> {
+    let (tx, rx) = tokio::sync::mpsc::channel::<Result<String>>(32);
+
+    let provider_name = request.provider.clone();
+    let api_key = request.api_key.clone();
+    let model = request.model.clone();
+    let message = request.message.clone();
+    let system_prompt = request.system_prompt.clone();
+
+    tokio::spawn(async move {
+        let result = chat_stream_internal(&provider_name, &api_key, &model, &message, &system_prompt, tx.clone()).await;
+        if let Err(e) = result {
+            let _ = tx.send(Err(e)).await;
+        }
+    });
+
+    Ok(rx)
+}
+
+async fn chat_stream_internal(
+    provider_name: &Option<String>,
+    api_key: &Option<String>,
+    model: &Option<String>,
+    message: &str,
+    system_prompt: &Option<String>,
+    tx: tokio::sync::mpsc::Sender<Result<String>>,
+) -> Result<()> {
+    if let Some(ref provider_str) = provider_name {
+        match provider_str.to_lowercase().as_str() {
+            "ollama" => {
+                return ollama::chat_stream(
+                    model.as_deref().unwrap_or("llama3.2"),
+                    message,
+                    system_prompt.as_deref(),
+                    tx,
+                )
+                .await;
+            }
+            "openai" => {
+                return providers::openai_stream(
+                    api_key.as_ref().ok_or_else(|| anyhow::anyhow!("OpenAI API key required"))?,
+                    model.as_deref().unwrap_or("gpt-4o-mini"),
+                    message,
+                    system_prompt.as_deref(),
+                    tx,
+                )
+                .await;
+            }
+            "anthropic" => {
+                return providers::anthropic_stream(
+                    api_key.as_ref().ok_or_else(|| anyhow::anyhow!("Anthropic API key required"))?,
+                    model.as_deref().unwrap_or("claude-3-5-sonnet-20241022"),
+                    message,
+                    system_prompt.as_deref(),
+                    tx,
+                )
+                .await;
+            }
+            "groq" => {
+                return providers::groq_stream(
+                    api_key.as_ref().ok_or_else(|| anyhow::anyhow!("Groq API key required"))?,
+                    model.as_deref().unwrap_or("llama-3.3-70b-versatile"),
+                    message,
+                    system_prompt.as_deref(),
+                    tx,
+                )
+                .await;
+            }
+            _ => {}
+        }
+    }
+
+    ollama::chat_stream(
+        model.as_deref().unwrap_or("llama3.2"),
+        message,
+        system_prompt.as_deref(),
+        tx,
+    )
+    .await
 }
 
 pub async fn summarize(request: &AiSummarizeRequest) -> Result<AiSummarizeResponse> {

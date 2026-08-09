@@ -2,10 +2,15 @@ use anyhow::Result;
 use axum::{
     extract::State,
     http::{HeaderMap, StatusCode},
-    response::IntoResponse,
+    response::{
+        sse::{Event, KeepAlive, Sse},
+        IntoResponse,
+    },
     routing::{get, post},
     Json, Router,
 };
+use futures::stream::Stream;
+use std::convert::Infallible;
 use std::sync::Arc;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tower_http::cors::{Any, CorsLayer};
@@ -74,6 +79,7 @@ pub async fn run_http_server(host: &str, port: u16) -> Result<()> {
         .route("/api/pdf/extract", post(pdf_extract))
         .route("/api/pdf/tables", post(pdf_extract_tables))
         .route("/api/ai/chat", post(ai_chat))
+        .route("/api/ai/chat/stream", post(ai_chat_stream))
         .route("/api/ai/summarize", post(ai_summarize))
         .route("/api/ai/index", post(ai_index))
         .route("/api/ai/search", post(ai_search))
@@ -781,6 +787,68 @@ async fn ai_chat(
         )
             .into_response(),
     }
+}
+
+async fn ai_chat_stream(
+    headers: HeaderMap,
+    State(state): State<Arc<AppState>>,
+    Json(request): Json<AiChatStreamRequest>,
+) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
+    use async_stream::stream;
+
+    let tier = extract_tier_from_headers(&headers);
+    let usage_tracker = state.usage_tracker.clone();
+
+    let stream = stream! {
+        if let Err(err) = check_ai_limit(&tier, &usage_tracker).await {
+            let error_chunk = AiStreamChunk {
+                chunk: format!("Error: {}", err.error),
+                done: true,
+            };
+            yield Ok(Event::default().data(serde_json::to_string(&error_chunk).unwrap()));
+            return;
+        }
+
+        let mut receiver = match ai::chat_stream(&request).await {
+            Ok(rx) => rx,
+            Err(e) => {
+                let error_chunk = AiStreamChunk {
+                    chunk: format!("Error: {}", e),
+                    done: true,
+                };
+                yield Ok(Event::default().data(serde_json::to_string(&error_chunk).unwrap()));
+                return;
+            }
+        };
+
+        while let Some(chunk_result) = receiver.recv().await {
+            match chunk_result {
+                Ok(text) => {
+                    let chunk = AiStreamChunk {
+                        chunk: text,
+                        done: false,
+                    };
+                    yield Ok(Event::default().data(serde_json::to_string(&chunk).unwrap()));
+                }
+                Err(e) => {
+                    let error_chunk = AiStreamChunk {
+                        chunk: format!("Error: {}", e),
+                        done: true,
+                    };
+                    yield Ok(Event::default().data(serde_json::to_string(&error_chunk).unwrap()));
+                    return;
+                }
+            }
+        }
+
+        let done_chunk = AiStreamChunk {
+            chunk: String::new(),
+            done: true,
+        };
+        yield Ok(Event::default().data(serde_json::to_string(&done_chunk).unwrap()));
+    };
+
+    Sse::new(stream).keep_alive(KeepAlive::default())
 }
 
 async fn ai_summarize(
@@ -2968,8 +3036,18 @@ use tokio::sync::RwLock;
 
 static EXTENSION_CONFIG: OnceLock<RwLock<ExtensionConfig>> = OnceLock::new();
 
+fn extension_config_path() -> std::path::PathBuf {
+    get_data_dir().join("extension_config.json")
+}
+
 fn get_extension_config() -> &'static RwLock<ExtensionConfig> {
-    EXTENSION_CONFIG.get_or_init(|| RwLock::new(ExtensionConfig::default()))
+    EXTENSION_CONFIG.get_or_init(|| {
+        let config = match std::fs::read_to_string(extension_config_path()) {
+            Ok(data) => serde_json::from_str(&data).unwrap_or_default(),
+            Err(_) => ExtensionConfig::default(),
+        };
+        RwLock::new(config)
+    })
 }
 
 async fn config_get() -> impl IntoResponse {
@@ -2991,10 +3069,25 @@ async fn config_update(Json(request): Json<ConfigUpdateRequest>) -> impl IntoRes
     if let Some(template) = request.web_clip_template {
         config.web_clip_template = template;
     }
+
+    if let Err(e) = persist_extension_config(&config) {
+        tracing::warn!("Failed to persist extension config: {}", e);
+    }
+
     (
         StatusCode::OK,
         Json(serde_json::json!({"success": true})),
     )
+}
+
+fn persist_extension_config(config: &ExtensionConfig) -> Result<()> {
+    let path = extension_config_path();
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    let data = serde_json::to_string_pretty(config)?;
+    std::fs::write(&path, data)?;
+    Ok(())
 }
 
 async fn vault_folders(Json(request): Json<FoldersRequest>) -> impl IntoResponse {

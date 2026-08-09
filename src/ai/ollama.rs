@@ -1,4 +1,5 @@
 use anyhow::Result;
+use futures::StreamExt;
 use ollama_rs::{generation::completion::request::GenerationRequest, Ollama};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -96,6 +97,44 @@ pub async fn chat(
     let response = ollama.send_chat_messages(request).await?;
 
     Ok(response.message.content)
+}
+
+pub async fn chat_stream(
+    model: &str,
+    message: &str,
+    system: Option<&str>,
+    tx: tokio::sync::mpsc::Sender<Result<String>>,
+) -> Result<()> {
+    use ollama_rs::generation::chat::{request::ChatMessageRequest, ChatMessage, MessageRole};
+
+    let ollama = Ollama::default();
+
+    let mut chat_messages = Vec::new();
+
+    if let Some(sys) = system {
+        chat_messages.push(ChatMessage::new(MessageRole::System, sys.to_string()));
+    }
+    chat_messages.push(ChatMessage::new(MessageRole::User, message.to_string()));
+
+    let request = ChatMessageRequest::new(model.to_string(), chat_messages);
+
+    let mut stream = ollama.send_chat_messages_stream(request).await?;
+
+    while let Some(response) = stream.next().await {
+        match response {
+            Ok(chunk) => {
+                if tx.send(Ok(chunk.message.content)).await.is_err() {
+                    break;
+                }
+            }
+            Err(_) => {
+                let _ = tx.send(Err(anyhow::anyhow!("Stream error"))).await;
+                break;
+            }
+        }
+    }
+
+    Ok(())
 }
 
 fn format_size(bytes: u64) -> String {

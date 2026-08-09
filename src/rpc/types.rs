@@ -204,6 +204,29 @@ pub struct AiChatResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "bindings/")]
+pub struct AiChatStreamRequest {
+    pub message: String,
+    #[ts(optional)]
+    pub context: Option<Vec<String>>,
+    #[ts(optional)]
+    pub system_prompt: Option<String>,
+    #[ts(optional)]
+    pub provider: Option<String>,
+    #[ts(optional)]
+    pub api_key: Option<String>,
+    #[ts(optional)]
+    pub model: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
+pub struct AiStreamChunk {
+    pub chunk: String,
+    pub done: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "bindings/")]
 pub struct AiSummarizeRequest {
     pub text: String,
     #[ts(optional)]
